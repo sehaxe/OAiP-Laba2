@@ -1,0 +1,5 @@
+home/*/main
+__pycache__/
+*.pyc
+.venv/
+.bulba/
