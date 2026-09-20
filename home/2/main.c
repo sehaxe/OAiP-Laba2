@@ -5,7 +5,20 @@
 //П/4 = 1 - 1/3 + 1/5 - 1/7 + ...
 
 int main(void) {
-    // TODO: частичная сумма ряда Грегори из 500 членов
+    double sum = 0;
+    double denominator = 1;
+    double sign = 1;
+
+    for (int i = 0; i < 500; i++){
+        sum = sum + sign / denominator;
+
+        denominator = denominator + 2;
+        sign = sign * (-1);
+    }
+
+    double pi = sum * 4;
+
+    printf("Число Пи равно: %lf", pi);
 
     return 0;
 }
