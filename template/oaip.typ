@@ -257,9 +257,17 @@
 // Блок-схема: белая картинка по центру, подпись «Рисунок N – …» снизу.
 // --- схемы gostpadi: единый масштаб без ручных ширин -----------------------
 // gostpadi рисует пачку схем в одном масштабе (блоки одного типа во всех
-// схемах одного размера). PNG несёт размер в пикселях — читаем его из
-// заголовка и умножаем на scheme-scale (мм на пиксель, один параметр
-// на весь отчёт). Всё, что шире колонки, ужимается до неё.
+// схемах одного размера), поэтому картинка вставляется в натуральном
+// размере: SVG несёт его сам в заголовке (pt), PNG (старый python-gostpadi)
+// читается из заголовка и умножается на scheme-scale. Всё, что шире
+// колонки, ужимается до неё.
+
+#let _svg-pt(path) = {
+  let s = read(path)
+  let a = s.position("width=\"") + 7
+  let tail = s.slice(a)
+  float(tail.slice(0, tail.position("pt\"")))
+}
 
 #let _png-px(path) = {
   let b = read(path, encoding: none)
@@ -274,8 +282,13 @@
 #let _land-width = 297mm - _gost-margin.left - _gost-margin.right  // 252 мм
 
 #let _fit-width(path, max) = {
-  let (wpx, _) = _png-px(path)
-  calc.min(wpx * scheme-scale * 1mm, max)
+  let natural = if path.ends-with(".svg") {
+    _svg-pt(path) * 1pt
+  } else {
+    let (wpx, _) = _png-px(path)
+    wpx * scheme-scale * 1mm
+  }
+  calc.min(natural, max)
 }
 
 #let flow(path, caption: none, max: 100%) = figure(
