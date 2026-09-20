@@ -7,9 +7,9 @@
 // и складывает в assets/ (SVG), скриншоты терминала генерирует
 // report/make_screens.py из реальных запусков (assets/term_taskN.png).
 
-#import "../../template/arxiv.typ": *
+#import "../../template/oaip.typ": *
 
-#show: arxiv.with(
+#show: oaip.with(
   lab: 2,
   title: "Операторы цикла",
   group: "658304",
@@ -29,7 +29,7 @@
 
 #listing(read("../1/main.c"), caption: [Программа к заданию № 1])
 
-#shot("/home/report/assets/term_task1.png", width: 100%, caption: [Результаты выполнения задания № 1])
+#terminal("/home/report/assets/term.json", n: 1, caption: [Результаты выполнения задания № 1])
 
 #flow("/home/report/assets/1-main.svg", caption: [Блок-схема программы к заданию № 1])
 
@@ -41,7 +41,7 @@
 
 #listing(read("../2/main.c"), caption: [Программа к заданию № 2])
 
-#shot("/home/report/assets/term_task2.png", caption: [Результаты выполнения задания № 2])
+#terminal("/home/report/assets/term.json", n: 2, caption: [Результаты выполнения задания № 2])
 
 #flow("/home/report/assets/2-main.svg", caption: [Блок-схема программы к заданию № 2])
 
@@ -53,6 +53,6 @@
 
 #listing(read("../3/main.c"), caption: [Программа к заданию № 3])
 
-#shot("/home/report/assets/term_task3.png", caption: [Результаты выполнения задания № 3])
+#terminal("/home/report/assets/term.json", n: 3, caption: [Результаты выполнения задания № 3])
 
 #flow("/home/report/assets/3-main.svg", caption: [Блок-схема программы к заданию № 3])

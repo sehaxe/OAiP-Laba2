@@ -1,73 +1,27 @@
 // ============================================================================
-// oaip.typ — шаблон отчёта по лабораторным работам по ОАиП (БГУИР)
+// oaip.typ — шаблон отчёта по лабораторным работам по ОАиП (БГУИР).
+// Титульный лист — по образцу кафедры; тело свёрстано как препринт arXiv
+// (по мотивам пакета @preview/arkheion): New Computer Modern, шапка
+// «линия — заголовок — линия», цель работы как аннотация, заголовки
+// без прописных и без разрыва страниц, номер страницы снизу по центру.
+// Прежний СТП-стиль живёт в oaip-legacy.typ.
 //
-// Оформление тела отчёта — по СТП 01–2024 БГУИР «Дипломные проекты (работы).
-// Общие требования» (требования разделов 2 и 3 распространяются и на отчёты
-// по лабораторным работам):
-//   · А4, поля: левое 30 мм, правое 15 мм, верхнее и нижнее 20 мм (п. 2.1.1);
-//   · Times New Roman 14 pt, межстрочный интервал 1,0 = 18 pt,
-//     абзацный отступ 1,25 см, выравнивание по ширине (п. 2.1.1);
-//   · заголовки полужирные без переносов и точки в конце (п. 2.2.5);
-//     нумерованные разделы «1 ЗАГОЛОВОК» — с абзацного отступа по левому
-//     краю, подразделы «1.1 Заголовок» — строчными (п. 2.1.1, 2.2.2,
-//     приложение Л); ненумерованные разделы (цель работы, введение,
-//     заключение, список использованных источников, приложения) —
-//     ПРОПИСНЫМИ по центру без отступа (п. 2.1.1); чтобы раздел был без
-//     номера: #heading(level: 1, numbering: none)[Название];
-//     вокруг заголовка — пробельная строка (п. 2.1.1, 2.2.6);
-//     каждый нумерованный раздел — с новой страницы (п. 2.2.6);
-//   · формулы — по центру отдельной строкой, номер в скобках у правого
-//     края (п. 2.4.3, 2.4.7), нумерация сквозная: $ x = 1 $;
-//   · номер страницы внизу справа; титульный лист входит в нумерацию,
-//     но номер на нём не ставится (п. 2.2.8);
-//   · подпись рисунка «Рисунок 1 – Название» под рисунком по центру,
-//     без точки в конце (п. 2.5.5); подпись таблицы «Таблица 1 – Заголовок»
-//     над таблицей слева (п. 2.6.2);
-//   · перечисления — с абзацного отступа и знака «тире» (п. 2.3.5).
-// Титульный лист — по образцу кафедры, обязательный.
-//
-// Использование:
+// Использование — те же параметры, что и раньше:
 //   #import "../../template/oaip.typ": *
-//   #show: oaip.with(
-//     lab: 1,
-//     title: "Структура программы на Си. Функции ввода-вывода",
-//     group: "658304",
-//     student: "Иванов И. И.",
-//     teacher: "Селезнев А. И.",
-//     variant: 5,
-//     goal: [Научиться разрабатывать линейные и разветвляющиеся алгоритмы…],
-//   )
-//
-//   = Задание № 1
-//   #listing(read("../1/main.c"), caption: [Программа к заданию № 1])
-//   #shot("/lab/report/assets/term.png", caption: [Результаты выполнения])
-//   #flow("/lab/report/assets/flow.png", caption: [Блок-схема программы])
-//   #flow-wide("/lab/report/assets/big.png", caption: [Широкая схема])
-//
-// Пути к картинкам в shot()/flow()/flow-wide() — ОТ КОРНЯ ПРОЕКТА (со слэша),
-// сборка: typst compile --root <корень> report/main.typ
-//
-// Шрифты: основной — Times New Roman, на Linux подставляется Liberation Serif
-// (метрический двойник). Листинги — Courier New / Liberation Mono.
-// Все шрифты встраиваются в PDF.
+//   #show: oaip.with(lab: 2, title: "Операторы цикла", ...)
 // ============================================================================
 
-// --- шрифты -----------------------------------------------------------------
+// --- шрифты: Computer Modern (дефолт typst) + системный моноширинный --------
 
-#let _serif = ("Times New Roman", "Liberation Serif", "Noto Serif")
-#let _mono = ("Courier New", "Liberation Mono", "DejaVu Sans Mono")
+#let _mono = ("DejaVu Sans Mono", "Liberation Mono")
 
-// --- параметры СТП 01–2024 --------------------------------------------------
+// --- геометрия страницы (по arkheion) ----------------------------------------
 
-// межстрочный интервал 1,0 = 18 pt при 14 pt (п. 2.1.1); leading Typst
-// отсчитывается поверх высоты строки шрифта (~1.11em), поэтому вычитаем её
-#let _line = 18pt - 1.11em
-#let _indent = 1.25cm          // абзацный отступ (п. 2.1.1)
-#let _gost-margin = (top: 20mm, bottom: 20mm, left: 30mm, right: 15mm)
-#let scheme-scale = 0.05             // мм на пиксель PNG блок-схем:
-                                    // один масштаб на все схемы отчёта
+#let _margin = (top: 25mm, bottom: 30mm, left: 25mm, right: 25mm)
+#let _text-width = 210mm - _margin.left - _margin.right   // 160 мм
+#let _land-width = 297mm - _margin.left - _margin.right   // 247 мм
 
-// --- главный show-rule ------------------------------------------------------
+// --- главный show-rule --------------------------------------------------------
 
 #let oaip(
   lab: none,
@@ -79,7 +33,7 @@
   teacher: "",
   city: "Минск",
   year: none,
-  goal: none,   // цель работы — раздел «ЦЕЛЬ РАБОТЫ» после титульника
+  goal: none,   // цель работы — блок-аннотация на первой странице тела
   it,
 ) = {
   set document(
@@ -87,13 +41,14 @@
     author: student,
   )
 
-  // --- страница: А4, поля по СТП, номер внизу справа (п. 2.1.1, 2.2.8) ---
-  set page(width: 21cm, height: 29.7cm, margin: _gost-margin,
-    numbering: "1", number-align: bottom + right)
+  // страница: А4, поля arkheion, номер снизу по центру
+  set page(width: 21cm, height: 29.7cm, margin: _margin,
+    numbering: "1", number-align: center)
 
-  // ======================= титульный лист (по образцу кафедры) ==============
+  // ======================= титульный лист — вербатим из oaip.typ ============
   {
-    set text(font: _serif, size: 14pt, lang: "ru")
+    set text(font: ("Times New Roman", "Liberation Serif", "Noto Serif"),
+      size: 14pt, lang: "ru")
     set page(numbering: none)
     set par(first-line-indent: 0mm, justify: false, spacing: 0em)
 
@@ -133,7 +88,6 @@
 
     v(1fr)
 
-    // блок «Выполнил / Проверил» — правее центра, как в образце
     grid(
       columns: (1.15fr, 1fr),
       [],
@@ -148,119 +102,159 @@
     pagebreak()
   }
 
-  // титульник считается страницей 1, но номер на нём не ставится (п. 2.2.8)
+  // титульник — страница 1 без номера
   counter(page).update(2)
 
-  // ======================= тело по СТП 01–2024 ==============================
-  set text(font: _serif, size: 14pt, lang: "ru")
-  set par(
-    justify: true,               // по ширине страницы (п. 2.1.1)
-    leading: _line,              // межстрочный интервал 18 pt
-    spacing: _line,              // без интервала между абзацами, как в Word
-    first-line-indent: (amount: _indent, all: true), // отступ у каждого абзаца
-  )
+  // ======================= тело в духе arXiv (по arkheion) ==================
+  set text(font: "New Computer Modern", size: 11pt, lang: "ru", hyphenate: true)
+  set par(justify: true, first-line-indent: (amount: 1.2em, all: true))
 
-  // перечисления: тире с абзацного отступа (п. 2.3.5), нумерованные — «1)» (п. 2.3.8)
-  set list(indent: _indent, spacing: _line, marker: [–])
-  set enum(indent: _indent, spacing: _line, numbering: "1)")
-  show list: set par(first-line-indent: 0mm)
-  show enum: set par(first-line-indent: 0mm)
-
-  // заголовки: полужирные, без переносов и точки в конце (п. 2.2.5);
-  // нумерованные разделы — прописными с абзацного отступа по левому краю,
-  // подразделы — строчными (п. 2.1.1, 2.2.2, 2.2.5, приложение Л);
-  // ненумерованные разделы (СОДЕРЖАНИЕ, ВВЕДЕНИЕ, ЗАКЛЮЧЕНИЕ, СПИСОК
-  // ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ, ПРИЛОЖЕНИЯ) — прописными по центру (п. 2.1.1);
-  // вокруг заголовка — пробельная строка (п. 2.2.6); каждый раздел —
-  // с новой страницы (п. 2.2.6)
+  // заголовки: нумерация «1», строчными, без разрыва страниц (arkheion)
   set heading(numbering: "1")
-  // первый нумерованный раздел — без пейджбрейка (цель работы остаётся
-  // в начале страницы с ним), остальные — с новой (п. 2.2.6)
-  let _first-section = state("oaip-first-section", true)
   show heading: it => {
-    set text(weight: "bold", hyphenate: false)
-    let head = if it.numbering == none or it.level == 1 { upper(it.body) } else { it.body }
-    if it.numbering == none {
-      // ненумерованный раздел — по центру без абзацного отступа (п. 2.1.1)
-      block(width: 100%, above: 18pt, below: 18pt, breakable: false,
-        align(center, head))
-    } else {
-      // нумерованный — с абзацного отступа; вторые и последующие строки
-      // выравниваются по началу текста первой строки (п. 2.1.1, приложение Л)
-      block(width: 100%, above: 18pt, below: 18pt, breakable: false, {
-        set par(hanging-indent: _indent + 2em,
-          first-line-indent: (amount: _indent, all: false))
-        box(width: 2em, numbering(it.numbering, ..counter(heading).get()))
-        head
-      })
-    }
+    if it.level == 1 { pad(bottom: 10pt, it) }
+    else if it.level == 2 { pad(bottom: 8pt, it) }
+    else if it.level > 3 { text(11pt, weight: "bold", it.body + " ") }
+    else { it }
   }
 
-  // формулы: отдельной строкой по центру, номер в скобках у правого края
-  // (п. 2.4.3, 2.4.7); допускается сквозная нумерация (п. 2.4.6)
+  // формулы: нумерация «(1)» справа, как в arkheion
   set math.equation(numbering: "(1)", number-align: right)
+  show math.equation: set text(weight: 400)
+  show math.equation: set block(spacing: 0.65em)
 
-  // рисунки: подпись «Рисунок 1 – Название» снизу по центру, без точки
-  // (п. 2.5.5); таблицы: «Таблица 1 – Заголовок» сверху слева (п. 2.6.2);
-  // иллюстрация отделяется от текста и подписи пробельными строками
-  // (п. 2.5.3, приложение Н — подпись идёт сразу под рисунком)
-  set figure(supplement: [Рисунок], numbering: "1", gap: 8pt)
-  set figure.caption(position: bottom, separator: [ – ])
+  // рисунки: подпись «Рис. 1: …» снизу, кегль чуть меньше текста
+  set figure(supplement: [Рис.], numbering: "1", gap: 8pt)
+  set figure.caption(position: bottom)
+  show figure.caption: set text(size: 0.9em)
   show figure: set align(center)
-  show figure: set par(justify: false, first-line-indent: 0mm)
-  // ни картинка, ни код не разрываются между страницами: блок целиком
-  // уезжает на следующую страницу вместе с подписью
-  show figure: set block(breakable: false)
-  show figure: set block(above: 18pt, below: 18pt)
+  show figure: set par(first-line-indent: 0mm, justify: false)
+  show figure: set block(breakable: false, above: 1em, below: 1em)
   show figure.where(kind: table): set figure.caption(position: top)
   show figure.where(kind: table): set align(left)
 
-  // --- цель работы (ненумерованный раздел, как ВВЕДЕНИЕ/ЗАКЛЮЧЕНИЕ) ---
+  // ===== первая страница тела: шапка препринта (линии, заголовок, аннотация)
+
+  set par(first-line-indent: 0mm)
+
+  line(length: 100%, stroke: 2pt)
+  pad(bottom: 4pt, top: 4pt, align(center)[
+    #block(text(weight: 500, 1.75em, title))
+    #if lab != none [Лабораторная работа № #lab]
+  ])
+  line(length: 100%, stroke: 2pt)
+
+  // авторская строка, как у arkheion: имя, аффилиация, дата
+  pad(top: 0.5em, align(center)[
+    #text(weight: "bold")[#student] \
+    #discipline, группа #group \
+    #if variant != none [вариант #variant · ]#city, #year
+  ])
+
+  // цель работы — блок-аннотация с smallcaps-заголовком (arkheion «Abstract»)
   if goal != none {
-    heading(level: 1, numbering: none, outlined: false)[Цель работы]
-    goal
+    pad(x: 3em, top: 1em, bottom: 0.4em, align(center)[
+      #heading(outlined: false, numbering: none,
+        text(0.85em, smallcaps[Цель работы]))
+      #set par(justify: true)
+      #set text(hyphenate: false)
+      #align(left, goal)
+    ])
   }
+
+  // тело снова с абзацными отступами
+  set par(first-line-indent: (amount: 1.2em, all: true))
 
   it
 }
 
-// --- помощники для отчёта ---------------------------------------------------
+// --- помощники для отчёта (как в oaip.typ, но в препечатной стилистике) -----
 
-// Листинг: моноширинный Courier с номерами строк, подпись
-// «Листинг N – …» снизу (рамки СТП не предусматривает).
+// Листинг: моноширинный на светло-серой плашке, подпись «Листинг N: …» снизу.
 // source — строка с кодом (например, read("../1/main.c")).
-#let listing(source, caption: none, lang: "c", line-numbers: true, size: 0.8em) = figure(
+#let listing(source, caption: none, lang: "c", line-numbers: true, size: 0.75em) = figure(
   kind: "listing",
   supplement: [Листинг],
   numbering: "1",
   caption: caption,
-  {
-    set align(left) // figure центрирует содержимое по умолчанию — коду нужен левый край
+  block(width: 100%, fill: luma(248), radius: 4pt, inset: 10pt, {
+    set align(left)
     set text(font: _mono, size: size)
     set par(justify: false, leading: 0.62em, spacing: 0.62em, first-line-indent: 0mm)
     set raw(align: left, tab-size: 4)
     show raw.line: it => if line-numbers {
-      box(width: 1.9em, align(right, str(it.number))) + h(6pt) + it
+      box(width: 1.9em, align(right, text(fill: luma(120), str(it.number)))) + h(6pt) + it
     } else {
       it
     }
     raw(source, lang: lang)
-  },
+  }),
 )
 
-// Скриншот результата: по центру, подпись «Рисунок N – …» снизу.
+// Скриншот результата: по центру, подпись «Рис. N: …» снизу.
 #let shot(path, caption: none, width: 88%) = figure(
   image(path, width: width),
   caption: caption,
 )
 
-// Блок-схема: белая картинка по центру, подпись «Рисунок N – …» снизу.
-// --- схемы gostpadi: единый масштаб без ручных ширин -----------------------
-// gostpadi рисует пачку схем в одном масштабе (блоки одного типа во всех
-// схемах одного размера), поэтому картинка вставляется в натуральном
-// размере: SVG несёт его сам в заголовке (pt), PNG (старый python-gostpadi)
-// читается из заголовка и умножается на scheme-scale. Всё, что шире
-// колонки, ужимается до неё.
+// Терминальное окно, нарисованное вектором прямо в PDF (не растр).
+// Данные — JSON от report/make_screens.py: скрипт прогоняет настоящие
+// бинарники и складывает реальный вывод в assets/term.json, поэтому
+// текст на рисунке всегда настоящий; здесь он только отрисовывается.
+#let terminal(json-path, n: 1, caption: none) = {
+  let s = json(json-path).at(str(n))
+  let user = text(fill: rgb("#1a7f37"), size: 8.5pt)[sehaxe]
+  let host = text(fill: rgb("#6e7781"), size: 8.5pt)[\@cachyos:]
+  let dir = text(fill: rgb("#0969da"), size: 8.5pt)[~/ОАиП-Лаба2/home]
+  let dollar = text(fill: rgb("#8250df"), size: 8.5pt)[\$ ]
+  let runs = s.runs.map(run => {
+    let cmd = par[#user#host#dir#dollar#text(fill: rgb("#24292f"), size: 8.5pt, run.cmd)]
+    let inp = if run.prompt != none {
+      par[#text(fill: rgb("#24292f"), size: 8.5pt, run.prompt)#text(fill: rgb("#bc4c00"), size: 8.5pt, run.input)]
+    } else if run.input != "" {
+      par[#text(fill: rgb("#bc4c00"), size: 8.5pt, run.input)]
+    } else {
+      none
+    }
+    let out = run.out.map(l => par[#text(fill: rgb("#24292f"), size: 8.5pt, l)])
+    (cmd,) + (if inp != none { (inp,) } else { () }) + out
+  }).flatten()
+  let body = if runs.len() > 0 { runs.first() } else { [] }
+  for l in runs.slice(1) {
+    body += v(7pt)
+    body += l
+  }
+  figure(
+    block(width: 100%, fill: white, stroke: 0.7pt + luma(201), radius: 7pt,
+      inset: 0pt, {
+        block(fill: luma(238), radius: (top-left: 7pt, top-right: 7pt,
+          bottom-right: 0pt, bottom-left: 0pt), inset: (x: 10pt, y: 6pt))[
+          #grid(columns: (auto, 1fr, auto), align: (left, center, right),
+            grid(columns: (auto, auto, auto), gutter: 5pt,
+              box(circle(radius: 4pt, fill: rgb("#ff5f56"))),
+              box(circle(radius: 4pt, fill: rgb("#ffbd2e"))),
+              box(circle(radius: 4pt, fill: rgb("#27c93f")))),
+            text(fill: rgb("#6e7781"), size: 8pt)[#s.title],
+            h(1pt),
+          )
+        ]
+        block(width: 100%, inset: (top: 10pt, right: 14pt, bottom: 12pt, left: 12pt))[
+          #set align(left)
+          #set text(font: _mono, size: 8.5pt)
+          #set par(justify: false, leading: 0.72em, spacing: 0.72em,
+            first-line-indent: 0mm)
+          #body
+        ]
+      }),
+    caption: caption,
+  )
+}
+
+// Блок-схемы gostpadi: пачка рисуется в одном масштабе, поэтому вставляем
+// в натуральном размере (SVG несёт его в заголовке, PNG — через scheme-scale);
+// всё, что шире колонки, ужимается до неё.
+
+#let scheme-scale = 0.05   // мм на пиксель PNG (старый python-gostpadi)
 
 #let _svg-pt(path) = {
   let s = read(path)
@@ -271,15 +265,11 @@
 
 #let _png-px(path) = {
   let b = read(path, encoding: none)
-  // PNG: 8 байт подписи, 4 длины, 4 "IHDR", затем ширина и высота (big-endian)
   (
     int.from-bytes(b.slice(16, 20), endian: "big"),
     int.from-bytes(b.slice(20, 24), endian: "big"),
   )
 }
-
-#let _text-width = 210mm - _gost-margin.left - _gost-margin.right   // 165 мм
-#let _land-width = 297mm - _gost-margin.left - _gost-margin.right  // 252 мм
 
 #let _fit-width(path, max) = {
   let natural = if path.ends-with(".svg") {
@@ -292,19 +282,15 @@
 }
 
 #let flow(path, caption: none, max: 100%) = figure(
-  // натуральный размер из DPI-метаданных PNG: gostpadi рисует пачку схем
-  // в одном масштабе, поэтому блоки во всех схемах отчёта — одного размера;
-  // всё, что шире колонки, ужимается до неё
   image(path, width: _fit-width(path, _text-width * max)),
   caption: caption,
 )
 
-// Очень широкая схема (switch на много ветвей): альбомный лист — ГОСТ
-// разрешает выносить такие схемы; масштаб остаётся общим для пачки.
+// Очень широкая схема: альбомный лист, масштаб пачки сохраняется.
 #let flow-wide(path, caption: none) = page(
   flipped: true,
   numbering: "1",
-  number-align: bottom + right,
+  number-align: center,
   {
     set align(center)
     v(1fr)
