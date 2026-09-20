@@ -16,9 +16,8 @@ report:
 clean:
 	rm -f 1/main 2/main 3/main
 
-# Блок-схемы: gostpadi (pip install gostpadi) рисует их прямо из main.c
-# в report/assets/; отчёт подключает их оттуда.
-# Быстрый просмотр одной схемы: gostpadi --labels=ru 1/main.c --show
+# Блок-схемы: gostpadi 2.0 (Rust) рисует SVG прямо из main.c в report/assets/;
+# отчёт подключает их оттуда. Одна схема: gostpadi 1/main.c -o 1.svg
 .PHONY: schemes
 schemes:
-	gostpadi --labels=ru 1/main.c 2/main.c 3/main.c -o report/assets/ --scale=3 --lw=1.5
+	gostpadi --labels=ru 1/main.c 2/main.c 3/main.c -o report/assets/ --lw=1.5
