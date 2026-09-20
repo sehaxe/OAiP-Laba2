@@ -16,7 +16,7 @@ int main(void) {
         while (pow((1 + 1/n), y) < 3){
             y++;
         }
-        printf("\nТребуется %d лет\n", y);
+        printf("\nТребуется %u лет\n", y);
     } else {
         printf("Ошибка\n");
     }
