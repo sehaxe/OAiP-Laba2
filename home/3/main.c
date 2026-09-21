@@ -6,19 +6,31 @@
 
 int main(void) {
     unsigned int a, b, c;
+    int ta, tb; //ввод читается в знаковые: %u принял бы -3 за 4294967293
+    int d;      //символ для вычерпывания буфера ввода
+    int ok = 0;
 
-    printf("Введите числа a и b: ");
+    while (!ok) {
+        printf("Введите числа a и b: ");
 
-    if (scanf("%u %u", &a, &b) == 2 && a > 0 && b > 0){
-        while (b != 0){
-            c = a % b;
-            a = b;
-            b = c;
+        ok = (scanf("%d %d", &ta, &tb) == 2) && (ta > 0) && (tb > 0);
+
+        if (!ok) {
+            while ((d = getchar()) != '\n' && d != EOF); //вычерпать плохой ввод
+            printf("Ошибка: нужны два положительных числа. Повторите ввод.\n");
         }
-        printf("НОД: %u\n", a);
-    } else {
-        printf("Ошибка\n");
     }
+
+    a = ta;
+    b = tb;
+
+    while (b != 0){
+        c = a % b;
+        a = b;
+        b = c;
+    }
+
+    printf("НОД: %u\n", a);
 
     return 0;
 }
