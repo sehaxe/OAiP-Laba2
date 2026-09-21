@@ -19,7 +19,10 @@
 
 #let _margin = (top: 25mm, bottom: 30mm, left: 25mm, right: 25mm)
 #let _text-width = 210mm - _margin.left - _margin.right   // 160 мм
+#let _text-height = 297mm - _margin.top - _margin.bottom  // 242 мм
 #let _land-width = 297mm - _margin.left - _margin.right   // 247 мм
+#let _land-height = 210mm - _margin.top - _margin.bottom  // 155 мм
+#let _fig-cap = 26pt  // запас под подпись рисунка при вписывании по высоте
 
 // --- главный show-rule --------------------------------------------------------
 
@@ -199,8 +202,10 @@
 
 // Терминальное окно, нарисованное вектором прямо в PDF (не растр).
 // Данные — JSON от report/make_screens.py: скрипт прогоняет настоящие
-// бинарники и складывает реальный вывод в assets/term.json, поэтому
-// текст на рисунке всегда настоящий; здесь он только отрисовывается.
+// бинарники и складывает в assets/term.json построчный экран каждой
+// сессии (эхо ввода после каждого приглашения — как в настоящем
+// терминале), поэтому текст на рисунке всегда настоящий; здесь он
+// только отрисовывается.
 #let terminal(json-path, n: 1, caption: none) = {
   let s = json(json-path).at(str(n))
   let user = text(fill: rgb("#1a7f37"), size: 8.5pt)[sehaxe]
@@ -209,15 +214,13 @@
   let dollar = text(fill: rgb("#8250df"), size: 8.5pt)[\$ ]
   let runs = s.runs.map(run => {
     let cmd = par[#user#host#dir#dollar#text(fill: rgb("#24292f"), size: 8.5pt, run.cmd)]
-    let inp = if run.prompt != none {
-      par[#text(fill: rgb("#24292f"), size: 8.5pt, run.prompt)#text(fill: rgb("#bc4c00"), size: 8.5pt, run.input)]
-    } else if run.input != "" {
-      par[#text(fill: rgb("#bc4c00"), size: 8.5pt, run.input)]
+    let lines = run.lines.map(l => if l.at("echo", default: none) != none {
+      // приглашение + эхо набранного ввода
+      par[#text(fill: rgb("#24292f"), size: 8.5pt, l.echo.prompt)#text(fill: rgb("#bc4c00"), size: 8.5pt, l.echo.input)]
     } else {
-      none
-    }
-    let out = run.out.map(l => par[#text(fill: rgb("#24292f"), size: 8.5pt, l)])
-    (cmd,) + (if inp != none { (inp,) } else { () }) + out
+      par[#text(fill: rgb("#24292f"), size: 8.5pt, l.out)]
+    })
+    (cmd,) + lines
   }).flatten()
   let body = if runs.len() > 0 { runs.first() } else { [] }
   for l in runs.slice(1) {
@@ -250,17 +253,20 @@
   )
 }
 
-// Блок-схемы gostpadi: пачка рисуется в одном масштабе, поэтому вставляем
-// в натуральном размере (SVG несёт его в заголовке, PNG — через scheme-scale);
-// всё, что шире колонки, ужимается до неё.
+// Блок-схемы gostpadi: пачка рисуется в одном масштабе (--no-split —
+// схема одним листом), вставляем в натуральном размере; всё, что не
+// влезает в колонку по ширине или в полосу по высоте, ужимается до неё.
 
 #let scheme-scale = 0.05   // мм на пиксель PNG (старый python-gostpadi)
 
-#let _svg-pt(path) = {
+#let _svg-size(path) = {
+  // ширина и высота из заголовка SVG (первое вхождение — корневой тег)
   let s = read(path)
-  let a = s.position("width=\"") + 7
-  let tail = s.slice(a)
-  float(tail.slice(0, tail.position("pt\"")))
+  let w = s.slice(s.position("width=\"") + 7)
+  let w = float(w.slice(0, w.position("pt\"")))
+  let h = s.slice(s.position("height=\"") + 8)
+  let h = float(h.slice(0, h.position("pt\"")))
+  (w, h)
 }
 
 #let _png-px(path) = {
@@ -271,20 +277,23 @@
   )
 }
 
-#let _fit-width(path, max) = {
-  let natural = if path.ends-with(".svg") {
-    _svg-pt(path) * 1pt
+// Коэффициент вставки и натуральная ширина: размер ужатый до
+// max-w × max-h, но только вниз (мелкие схемы не растягиваются).
+#let _fit-both(path, max-w, max-h) = {
+  let (nat-w, nat-h) = if path.ends-with(".svg") {
+    let (w, h) = _svg-size(path)
+    (w * 1pt, h * 1pt)
   } else {
-    let (wpx, _) = _png-px(path)
-    wpx * scheme-scale * 1mm
+    let (wpx, hpx) = _png-px(path)
+    (wpx * scheme-scale * 1mm, hpx * scheme-scale * 1mm)
   }
-  calc.min(natural, max)
+  (calc.min(1, max-w / nat-w, max-h / nat-h), nat-w)
 }
 
-#let flow(path, caption: none, max: 100%) = figure(
-  image(path, width: _fit-width(path, _text-width * max)),
-  caption: caption,
-)
+#let flow(path, caption: none, max: 100%) = {
+  let (s, nat-w) = _fit-both(path, _text-width * max, _text-height - _fig-cap)
+  figure(align(center, image(path, width: s * nat-w)), caption: caption)
+}
 
 // Очень широкая схема: альбомный лист, масштаб пачки сохраняется.
 #let flow-wide(path, caption: none) = page(
@@ -292,12 +301,10 @@
   numbering: "1",
   number-align: center,
   {
+    let (s, nat-w) = _fit-both(path, _land-width * 0.98, _land-height - _fig-cap)
     set align(center)
     v(1fr)
-    figure(
-      image(path, width: _fit-width(path, _land-width * 0.98)),
-      caption: caption,
-    )
+    figure(align(center, image(path, width: s * nat-w)), caption: caption)
     v(1fr)
   },
 )
